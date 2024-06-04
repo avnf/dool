@@ -34,7 +34,7 @@ class dool_plugin(dool):
         super().prepare()
         for elem in self.vars:
             self.set2[elem] = [0 for _ in self.nick]
-        print(self.set2)
+
     def check(self):
         if self.n_gpus <= 0:
             raise Exception("No GPU found or nvidia-smi not available.")
