@@ -9,16 +9,15 @@ class dool_plugin(dool):
     """
 
     def __init__(self):
-        self.nick = ('gpu%', 'mem%', 'mfree', 'mused', 'pwr', 'temp', 'fan%', 'clck')
+        self.nick = ('gpu%', 'mem%', 'mfree', 'mused', 'send', 'recv', 'pwr', 'temp', 'fan%', 'clck')
         #self.types = ['p', 'p', 'd', 'd', 'f', 'd', 'p', 'd']
         self.type = 's'
         # self.widths = [4, 6, 6, 6, 4, 4, 4, 4]
-        self.width = 7
+        self.width = 8
         # self.scales = [1, 1, 1024, 1024, 1, 1, 1, 1]
         self.scale = 1
         self.n_gpus = 0
         self.cols = len(self.nick)
-        #self.struct = dict(gpu=0, mem=0, mfree=0, mused=0, pwr=0, temp=0, fan=0, clck=0)
 
         if shutil.which('nvidia-smi') is not None:
             command = 'nvidia-smi --query-gpu=name --format=csv,noheader | wc -l'
@@ -40,23 +39,29 @@ class dool_plugin(dool):
             raise Exception("No GPU found or nvidia-smi not available.")
 
     def extract(self):
+        print()
         command = "nvidia-smi --query-gpu=utilization.gpu,utilization.memory,memory.free,memory.used,power.draw,temperature.gpu,fan.speed,clocks.current.graphics --format=csv,noheader,nounits"
         process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, text=True)
+        p2 = subprocess.run("nvidia-smi -q | grep -e 'Rx' -e 'Tx'", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, text=True)
         try:
             data = process.stdout.strip().split('\n')
+
+            rxtx_data = [k.split(' ')[-2] for k in p2.stdout.strip().split('\n')]
+            rxtx_data = [(rxtx_data[i], rxtx_data[i+1]) for i in range(0, len(rxtx_data), 2)]
 
             if len(data) != self.n_gpus:
                 raise Exception(f"Did not get enough data from nvidia-smi! Got {data}")
             for gpu_idx, gpu_name in enumerate(self.vars):
                 d = list(map(str.strip, data[gpu_idx].split(',')))
                 lst = self.set2[gpu_name]
-                for nick_idx in range(len(self.nick)):
+                for nick_idx in range(len(self.nick) - 1):
                     try:
-                        # if self.scales[nick_idx] == 1024:
-                        #     # nvidia-smi returns the value in megabytes
-                        #     lst[nick_idx] += float(d[nick_idx]) * 1024 * 1024
-                        # else:
-                        lst[nick_idx] += float(d[nick_idx])
+                        if nick_idx < 4:
+                            lst[nick_idx] += float(d[nick_idx])
+                        elif nick_idx == 4 or nick_idx == 5:
+                            lst[nick_idx] += float(rxtx_data[gpu_idx][nick_idx - 4])
+                        else:
+                            lst[nick_idx] += float(d[nick_idx-2])
                     except ValueError: # unparsable
                         lst[nick_idx] = -1
 
