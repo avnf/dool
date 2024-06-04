@@ -2725,7 +2725,6 @@ def main():
                 plug.prepare()
 
         except Exception as e:
-            print(e)
             if mod == mods[-1]:
                 print('Module %s failed to load. (%s)' % (pluginfile, e), file=sys.stderr)
             elif op.debug:
