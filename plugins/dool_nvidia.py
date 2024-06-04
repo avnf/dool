@@ -13,7 +13,7 @@ class dool_plugin(dool):
         #self.types = ['p', 'p', 'd', 'd', 'f', 'd', 'p', 'd']
         self.type = 's'
         # self.widths = [4, 6, 6, 6, 4, 4, 4, 4]
-        self.width = 6
+        self.width = 7
         # self.scales = [1, 1, 1024, 1024, 1, 1, 1, 1]
         self.scale = 1
         self.n_gpus = 0
