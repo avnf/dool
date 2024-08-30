@@ -1,11 +1,13 @@
-### Author: dag@wieers.com
+### Authors: dag@wieers.com; Manuel Stutz https://github.com/UeliDeSchwert
 import shutil
 import subprocess
 
 
 class dool_plugin(dool):
     """
-    CPU frequency in percentage as reported by ACPI.
+    GPU metrics from nvidia-smi
+    Usage:
+        dool --nvidia
     """
 
     def __init__(self):
